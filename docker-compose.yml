@@ -1,0 +1,47 @@
+version: "3.4"
+
+services:
+  postgresql-master:
+    image: "bitnami/postgresql:latest"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./postgresql_master_data:/bitnami/postgresql"
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+      - POSTGRESQL_USERNAME=argo
+      - POSTGRESQL_PASSWORD=aronmeron1234
+      - POSTGRESQL_DATABASE=sso
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  postgresql-slave:
+    image: "bitnami/postgresql:latest"
+    ports:
+      - "5432"
+    depends_on:
+      - postgresql-master
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+      - POSTGRESQL_MASTER_HOST=postgresql-master
+      - POSTGRESQL_PASSWORD=my_password
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "8084:80/tcp"
+    volumes:
+      - "./pgadmin_data:/var/lib/pgadmin"
+    environment:
+      - PGADMIN_LISTEN_ADDRESS=0.0.0.0
+      - PGADMIN_LISTEN_PORT=80
+      - PGADMIN_DEFAULT_EMAIL=aronmilahela@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin4
+    depends_on:
+      - postgresql-master
+  #   depends_on:
+  #     - postgres
